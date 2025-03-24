@@ -77,15 +77,6 @@ mkdir -p ~/.titanedge
 echo -e "${BLUE}Запускаем контейнер Titan через ProxyChains...${NC}"
 proxychains docker run --name titan --network=host -d -v ~/.titanedge:/root/.titanedge nezha123/titan-edge
 
-# Проверка доступности сервера
-echo -e "${BLUE}Проверяем доступность сервера ${YELLOW}https://api-test1.container1.titannet.io${NC}..."
-if ! proxychains curl -s --connect-timeout 5 https://api-test1.container1.titannet.io/api/v2/device/binding > /dev/null; then
-    echo -e "${RED}Сервер недоступен. Проверьте подключение к интернету, прокси или обратитесь к администраторам сервера.${NC}"
-    exit 1
-else
-    echo -e "${GREEN}Сервер доступен. Продолжаем установку...${NC}"
-fi
-
 # Привязка кода идентификации
 echo -e "${YELLOW}Введите ваш Titan identity code:${NC}"
 read identity_code
