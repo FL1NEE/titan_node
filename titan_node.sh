@@ -80,7 +80,7 @@ proxychains docker run --name titan --network=host -d -v ~/.titanedge:/root/.tit
 # Привязка кода идентификации
 echo -e "${YELLOW}Введите ваш Titan identity code:${NC}"
 read identity_code
-proxychains docker run --rm -it -v ~/.titanedge:/root/.titanedge nezha123/titan-edge bind --hash="$identity_code" https://api-test1.container1.titannet.io/api/v2/device/binding
+proxychains docker run -d --restart always -v ~/.titanedge:/root/.titanedge  --hash="$identity_code" --net=host nezha123/titan-edge
 
 # Заключительный вывод
 echo -e "${PURPLE}-----------------------------------------------------------------------${NC}"
