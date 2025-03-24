@@ -54,4 +54,50 @@ fi
 
 # Проверка занятости порта 1234
 if sudo netstat -tuln | grep -q ':1234'; then
-    echo -e "${RED}Порт 1234 уже занят. Пожалуйста, освободите пор
+    echo -e "${YELLOW}Порт 1234 занят. Освобождаем порт...${NC}"
+    sudo fuser -k 1234/tcp
+    sudo fuser -k 1234/udp
+fi
+
+# Проверка существования контейнера Titan
+if docker ps -a --format '{{.Names}}' | grep -q '^titan$'; then
+    echo -e "${YELLOW}Контейнер 'titan' уже существует. Удаляем его...${NC}"
+    docker stop titan > /dev/null 2>&1
+    docker rm titan > /dev/null 2>&1
+fi
+
+# Загрузка Docker-образа Titan
+echo -e "${BLUE}Загружаем Docker-образ Titan через ProxyChains...${NC}"
+proxychains docker pull nezha123/titan-edge
+
+# Создание директории Titan
+mkdir -p ~/.titanedge
+
+# Запуск Titan через ProxyChains
+echo -e "${BLUE}Запускаем контейнер Titan через ProxyChains...${NC}"
+proxychains docker run --name titan --network=host -d -v ~/.titanedge:/root/.titanedge nezha123/titan-edge
+
+# Проверка доступности сервера
+echo -e "${BLUE}Проверяем доступность сервера ${YELLOW}https://api-test1.container1.titannet.io${NC}..."
+if ! proxychains curl -s --connect-timeout 5 https://api-test1.container1.titannet.io/api/v2/device/binding > /dev/null; then
+    echo -e "${RED}Сервер недоступен. Проверьте подключение к интернету, прокси или обратитесь к администраторам сервера.${NC}"
+    exit 1
+else
+    echo -e "${GREEN}Сервер доступен. Продолжаем установку...${NC}"
+fi
+
+# Привязка кода идентификации
+echo -e "${YELLOW}Введите ваш Titan identity code:${NC}"
+read identity_code
+proxychains docker run --rm -it -v ~/.titanedge:/root/.titanedge nezha123/titan-edge bind --hash="$identity_code" https://api-test1.container1.titannet.io/api/v2/device/binding
+
+# Заключительный вывод
+echo -e "${PURPLE}-----------------------------------------------------------------------${NC}"
+echo -e "${YELLOW}Команда для проверки логов:${NC}"
+echo "docker logs -f titan"
+echo -e "${PURPLE}-----------------------------------------------------------------------${NC}"
+echo -e "${GREEN}CRYPTO FORTOCHKA — вся крипта в одном месте!${NC}"
+echo -e "${CYAN}Наш Telegram https://t.me/cryptoforto${NC}"
+
+# Проверка логов
+docker logs -f titan
